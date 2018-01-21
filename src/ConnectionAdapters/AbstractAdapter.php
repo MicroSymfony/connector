@@ -14,6 +14,8 @@ abstract class AbstractAdapter implements ConnectionAdapterInterface
     protected $serviceHeader;
     /** @var array */
     protected $additionalHeaders = [];
+    /** @var string */
+    protected $callerService;
 
     /**
      * @inheritdoc
@@ -33,7 +35,7 @@ abstract class AbstractAdapter implements ConnectionAdapterInterface
 
         $uri = $serviceIp.'/'.$path;
 
-        $params['headers'] = $this->mergeHeaders($serviceName, $params['headers'] ?? []);
+        $params['headers'] = $this->mergeHeaders($params['headers'] ?? []);
 
         return $this->requestRaw($method, $uri, $params);
     }
@@ -55,6 +57,14 @@ abstract class AbstractAdapter implements ConnectionAdapterInterface
     }
 
     /**
+     * @param DiscoveryAdapterInterface $discovery
+     */
+    public function setDiscovery(DiscoveryAdapterInterface $discovery): void
+    {
+        $this->discovery = $discovery;
+    }
+
+    /**
      * Get service IP from service discovery
      *
      * @param string $serviceName
@@ -63,7 +73,7 @@ abstract class AbstractAdapter implements ConnectionAdapterInterface
      */
     protected function getServiceIp(string $serviceName, bool $force = false): string
     {
-        if (!isset($this->serviceIps) || $force) {
+        if (!isset($this->serviceIps[$serviceName]) || $force) {
             $serviceIp = $this->discovery->discover($serviceName);
             $this->serviceIps[$serviceName] = $serviceIp;
         }
@@ -71,10 +81,10 @@ abstract class AbstractAdapter implements ConnectionAdapterInterface
         return $this->serviceIps[$serviceName];
     }
 
-    protected function mergeHeaders(string $serviceName, array $headers = []): array
+    protected function mergeHeaders(array $headers = []): array
     {
         if (!empty($this->serviceHeader)) {
-            $headers = array_merge($headers, [$this->serviceHeader => $serviceName]);
+            $headers = array_merge($headers, [$this->serviceHeader => $this->callerService]);
         }
         if (!empty($this->additionalHeaders)) {
             $headers = array_merge($headers, $this->additionalHeaders);
@@ -106,5 +116,13 @@ abstract class AbstractAdapter implements ConnectionAdapterInterface
     public function setServiceHeader(string $serviceHeader): void
     {
         $this->serviceHeader = $serviceHeader;
+    }
+
+    /**
+     * @param string $callerService
+     */
+    public function setCallerService(string $callerService = null): void
+    {
+        $this->callerService = $callerService;
     }
 }
