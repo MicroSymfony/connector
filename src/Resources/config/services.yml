@@ -1,3 +1,32 @@
 parameters:
+    symfony.micro_services.service_header: 'X-Service'
 
 services:
+    symfony.micro_services.connection.adapters.abstract:
+        class: MicroSymfony\Connection\ConnectionAdapters\AbstractAdapter
+        abstract: true
+        calls:
+            - [setDiscovery, ['symfony.micro_services.discovery']]
+            - [setServiceHeader, ['%symfony.micro_services.service_header%']]
+            - [setCallerService, ['%symfony.micro_services.service_name%']]
+
+    symfony.micro_services.connection.adapters.guzzle:
+        class: MicroSymfony\Connection\ConnectionAdapters\Guzzle
+        parent: 'symfony.micro_services.connection.adapters.abstract'
+
+    symfony.micro_services.connection:
+        alias: 'symfony.micro_services.connection.adapters.guzzle'
+
+    symfony.micro_services.discovery.adapters.consul_http:
+        class: MicroSymfony\Connection\DiscoveryAdapters\ConsulHttp
+        calls:
+            - [setConnection, ['@symfony.micro_services.connection']]
+            - [setDiscoveryIp, ['%env(CONSUL_HTTP_IP_PORT)%']]
+
+    symfony.micro_services.discovery.adapters.consul_dns:
+        class: MicroSymfony\Connection\DiscoveryAdapters\ConsulDns
+        calls:
+            - [setNameServers, ['%env(CONSUL_DNS_IP_PORT)%']]
+
+    symfony.micro_services.discovery:
+        alias: 'symfony.micro_services.discovery.adapters.consul_http'
