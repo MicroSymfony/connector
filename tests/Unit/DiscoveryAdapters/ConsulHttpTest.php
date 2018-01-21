@@ -5,6 +5,7 @@ namespace MicroSymfony\Test\Unit\DiscoveryAdapters;
 use MicroSymfony\Connection\ConnectionAdapters\ConnectionAdapterInterface;
 use MicroSymfony\Connection\DiscoveryAdapters\ConsulHttp;
 use MicroSymfony\Connection\Exceptions\ServiceNotFoundException;
+use PHPUnit\Framework\MockObject\MockObject;
 use PHPUnit\Framework\TestCase;
 
 class ConsulHttpTest extends TestCase
@@ -13,6 +14,7 @@ class ConsulHttpTest extends TestCase
     {
         $discovery = new ConsulHttp();
         $discovery->setDiscoveryIp('1.1.1.1:8500');
+        /** @var ConnectionAdapterInterface|MockObject $connection */
         $connection = $this->getMockBuilder(ConnectionAdapterInterface::class)
             ->setMethods(['requestRaw'])
             ->getMockForAbstractClass();
@@ -34,6 +36,7 @@ class ConsulHttpTest extends TestCase
     {
         $discovery = new ConsulHttp();
         $discovery->setDiscoveryIp('1.1.1.1:8500');
+        /** @var ConnectionAdapterInterface|MockObject $connection */
         $connection = $this->getMockBuilder(ConnectionAdapterInterface::class)
             ->setMethods(['requestRaw'])
             ->getMockForAbstractClass();
@@ -55,6 +58,7 @@ class ConsulHttpTest extends TestCase
     {
         $discovery = new ConsulHttp();
         $discovery->setDiscoveryIp('1.1.1.1:8500');
+        /** @var ConnectionAdapterInterface|MockObject $connection */
         $connection = $this->getMockBuilder(ConnectionAdapterInterface::class)
             ->setMethods(['requestRaw'])
             ->getMockForAbstractClass();
