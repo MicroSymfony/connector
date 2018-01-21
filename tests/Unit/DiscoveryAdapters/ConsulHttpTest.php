@@ -68,6 +68,6 @@ class ConsulHttpTest extends TestCase
         $discovery->setConnection($connection);
 
         $this->expectException(ServiceNotFoundException::class);
-        $result = $discovery->discover('testService');
+        $discovery->discover('testService');
     }
 }
