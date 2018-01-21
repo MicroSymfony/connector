@@ -32,11 +32,11 @@ class ConsulDns implements DiscoveryAdapterInterface
     }
 
     /**
-     * @param string[] $nameServers
+     * @param string $nameServers
      */
-    public function setNameServers(array $nameServers): void
+    public function setNameServers(string $nameServers): void
     {
-        $this->nameServers = $nameServers;
+        $this->nameServers = explode(';', $nameServers);
     }
 
     private function getResolver()
