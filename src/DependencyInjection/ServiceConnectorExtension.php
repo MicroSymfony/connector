@@ -1,6 +1,6 @@
 <?php
 
-namespace MicroSymfony\JWT\DependencyInjection;
+namespace MicroSymfony\Connection\DependencyInjection;
 
 use Symfony\Component\Config\FileLocator;
 use Symfony\Component\DependencyInjection\ContainerBuilder;
