@@ -6,7 +6,7 @@ services:
         class: MicroSymfony\Connection\ConnectionAdapters\AbstractAdapter
         abstract: true
         calls:
-            - [setDiscovery, ['symfony.micro_services.discovery']]
+            - [setDiscovery, ['@symfony.micro_services.discovery']]
             - [setServiceHeader, ['%symfony.micro_services.service_header%']]
             - [setCallerService, ['%symfony.micro_services.service_name%']]
 
@@ -30,3 +30,6 @@ services:
 
     symfony.micro_services.discovery:
         alias: 'symfony.micro_services.discovery.adapters.consul_http'
+
+    MicroSymfony\Connection\DiscoveryAdapters\DiscoveryAdapterInterface: '@symfony.micro_services.discovery'
+    MicroSymfony\Connection\ConnectionAdapters\ConnectionAdapterInterface: '@symfony.micro_services.connection'
