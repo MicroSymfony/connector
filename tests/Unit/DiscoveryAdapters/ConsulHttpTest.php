@@ -24,7 +24,7 @@ class ConsulHttpTest extends TestCase
                 $this->equalTo('GET'),
                 $this->equalTo('1.1.1.1:8500/v1/catalog/service/testService')
             )
-            ->willReturn('[{"Address":"2.2.2.2","ServicePort":"3333"}]');
+            ->willReturn('[{"ServiceAddress":"2.2.2.2","ServicePort":"3333"}]');
         $discovery->setConnection($connection);
 
         $result = $discovery->discover('testService');
@@ -46,7 +46,9 @@ class ConsulHttpTest extends TestCase
                 $this->equalTo('GET'),
                 $this->equalTo('1.1.1.1:8500/v1/catalog/service/testService')
             )
-            ->willReturn('[{"Address":"2.2.2.2","ServicePort":"3333"},{"Address":"2.2.2.1","ServicePort":"4444"}]');
+            ->willReturn(
+                '[{"ServiceAddress":"2.2.2.2","ServicePort":"3333"},{"ServiceAddress":"2.2.2.1","ServicePort":"4444"}]'
+            );
         $discovery->setConnection($connection);
 
         $result = $discovery->discover('testService');
@@ -64,14 +66,42 @@ class ConsulHttpTest extends TestCase
             ->getMockForAbstractClass();
         $connection->expects($this->any())
             ->method('requestRaw')
-            ->with(
-                $this->equalTo('GET'),
-                $this->equalTo('1.1.1.1:8500/v1/catalog/service/testService')
+            ->withConsecutive(
+                [$this->equalTo('GET'), $this->equalTo('1.1.1.1:8500/v1/catalog/service/testService')],
+                [$this->equalTo('GET'), $this->equalTo('1.1.1.1:8500/v1/catalog/services')]
             )
-            ->willReturn('[]');
+            ->willReturnOnConsecutiveCalls('[]', '[]');
         $discovery->setConnection($connection);
 
         $this->expectException(ServiceNotFoundException::class);
         $discovery->discover('testService');
+    }
+
+    public function testDiscoverPrefixedService()
+    {
+        $discovery = new ConsulHttp();
+        $discovery->setDiscoveryIp('1.1.1.1:8500');
+        /** @var ConnectionAdapterInterface|MockObject $connection */
+        $connection = $this->getMockBuilder(ConnectionAdapterInterface::class)
+            ->setMethods(['requestRaw'])
+            ->getMockForAbstractClass();
+        $connection->expects($this->any())
+            ->method('requestRaw')
+            ->withConsecutive(
+                [$this->equalTo('GET'), $this->equalTo('1.1.1.1:8500/v1/catalog/service/testService')],
+                [$this->equalTo('GET'), $this->equalTo('1.1.1.1:8500/v1/catalog/services')],
+                [$this->equalTo('GET'), $this->equalTo('1.1.1.1:8500/v1/catalog/service/prefix_testService-80')]
+            )
+            ->willReturnOnConsecutiveCalls(
+                '[]',
+                '{"testService122":[],"prefix_testService-80":[]}',
+                '[{"ServiceAddress":"2.2.2.2","ServicePort":"3333"},{"ServiceAddress":"2.2.2.1","ServicePort":"4444"}]'
+            );
+
+        $discovery->setConnection($connection);
+
+        $result = $discovery->discover('testService');
+
+        $this->assertContains($result, ['2.2.2.2:3333', '2.2.2.1:4444']);
     }
 }
