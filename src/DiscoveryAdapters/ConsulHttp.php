@@ -24,8 +24,8 @@ class ConsulHttp implements DiscoveryAdapterInterface
         if (empty($data)) {
             // service name might be pre-fixed due to docker compose
             $result = $this->connection->requestRaw('GET', $this->discoveryIp.'/v1/catalog/services');
-            $data = json_decode($result, true);
-            foreach ((array)$data as $service => $tags) {
+            $list = json_decode($result, true);
+            foreach ((array)$list as $service => $tags) {
                 if (preg_match('/.*?_'.$serviceName.'-80/', $service)) {
                     $result = $this->connection->requestRaw('GET', $this->discoveryIp.'/v1/catalog/service/'.$service);
                     $data = json_decode($result, true);
