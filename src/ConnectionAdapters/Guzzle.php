@@ -3,6 +3,8 @@
 namespace MicroSymfony\Connection\ConnectionAdapters;
 
 use GuzzleHttp\Client;
+use GuzzleHttp\Exception\RequestException;
+use MicroSymfony\Connection\Exceptions\UnauthorizedException;
 
 class Guzzle extends AbstractAdapter implements ConnectionAdapterInterface
 {
@@ -11,7 +13,15 @@ class Guzzle extends AbstractAdapter implements ConnectionAdapterInterface
 
     public function requestRaw(string $method, string $uri, array $params = []): string
     {
-        $result = $this->getConnection()->request($method, $uri, $params);
+        try {
+            $result = $this->getConnection()->request($method, $uri, $params);
+        } catch (RequestException $exception) {
+            if (403 === $exception->getCode()) {
+                throw new UnauthorizedException('You are not authorized to use this service', $exception->getCode());
+            } else {
+                throw $exception;
+            }
+        }
 
         return $result->getBody()->getContents();
     }
